@@ -1,0 +1,20 @@
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.eslintrc*
+frontend/vite.config.js.timestamp*
+
+# Backend
+backend/__pycache__/
+backend/*.pyc
+backend/.env
+backend/venv/
+
+# Mac
+.DS_Store
+.DS_Store?
+
+# Logs
+*.log
+npm-debug.log*
