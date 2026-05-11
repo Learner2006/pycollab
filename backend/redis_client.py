@@ -1,5 +1,5 @@
 # redis_client.py
-import aioredis
+import redis.asyncio as aioredis
 import os
 
 redis = None
