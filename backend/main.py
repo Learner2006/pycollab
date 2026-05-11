@@ -38,6 +38,9 @@ async def handle_create_room(body: dict):
         return {"error": "room_id is required"}
     return create_room(room_id, body.get("room_name", room_id))
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 
 @app.get("/room-exists/{room_id}")
 async def handle_room_exists(room_id: str):
