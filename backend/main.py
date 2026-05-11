@@ -8,10 +8,12 @@ from contextlib import asynccontextmanager
 from room_manager import create_room, room_exists, cleanup_empty_rooms
 from websocket import sio
 import socketio
+from redis_client import init_redis
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await init_redis()
     asyncio.create_task(cleanup_empty_rooms())
     yield
 
@@ -39,10 +41,17 @@ async def handle_create_room(body: dict):
 
 @app.get("/room-exists/{room_id}")
 async def handle_room_exists(room_id: str):
-    return room_exists(room_id)
-
+    result = room_exists(room_id)
+    if not result["exists"]:
+        from redis_client import get_redis
+        saved = await get_redis().get(f"room:{room_id}:code")
+        if saved:
+            # recreate room in memory
+            create_room(room_id, room_id)
+            return {"exists": True, "room_name": room_id}
+    return result
 
 sio_app = socketio.ASGIApp(sio, other_asgi_app=app)
 
 if __name__ == "__main__":
-    uvicorn.run(sio_app, host="0.0.0.0", port=8000, reload=False)
+    uvicorn.run(sio_app, host="0.0.0.0", port=8000, reload=False, ws='websockets')

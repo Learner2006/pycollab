@@ -28,11 +28,17 @@ export function initUserSocket(roomId, username, handlers) {
     socket.emit('join', { username, room_id: roomId })
   })
 
-  socket.on('update_users', handlers.onUpdateUsers)
+  socket.on('update_users', data => handlers.onUpdateUsers?.(data))
   socket.on('room_full', handlers.onRoomFull)
+  socket.on("execution_start", () => {
+    handlers.onExecutionStart?.()
+  })
   socket.on('execution_result', handlers.onExecutionResult)
-
+  socket.on('execution_stdout', handlers.onExecutionStdout)
   socket.on('chat_message', handlers.onChatMessage)
-  
+  socket.on('reaction', handlers.onReaction)
+  socket.on('keyword_activity', handlers.onKeywordActivity)
+  socket.on('restore_code', handlers.onRestoreCode)
+
   return socket
 }

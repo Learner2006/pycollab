@@ -18,3 +18,10 @@ backend/venv/
 # Logs
 *.log
 npm-debug.log*
+
+# macOS (additional)
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes

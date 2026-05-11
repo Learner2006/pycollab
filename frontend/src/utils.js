@@ -1,4 +1,4 @@
-export const BACKEND = 'http://localhost:8000'
+export const BACKEND = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
 
 export const ADJECTIVES = ['Purple', 'Silent', 'Cosmic', 'Rusty', 'Lazy', 'Spicy', 'Frozen', 'Golden']
 export const ANIMALS = ['Fox', 'Panda', 'Shark', 'Llama', 'Penguin', 'Raccoon', 'Otter', 'Cobra']
@@ -20,5 +20,8 @@ export function showToast(msg, type = 'success') {
   `
   document.body.appendChild(t)
   requestAnimationFrame(() => t.style.opacity = 1)
-  setTimeout(() => { t.style.opacity = 0; setTimeout(() => t.remove(), 300) }, 2500)
+  setTimeout(() => { 
+    t.style.opacity = 0
+    setTimeout(() => t.remove(), 300) 
+  }, 2500)
 }

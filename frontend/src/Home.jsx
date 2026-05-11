@@ -15,7 +15,7 @@ export default function Home() {
   }, [])
 
   async function handleCreate() {
-    if (!username.trim()) return showToast('Apna naam daalo!', 'warn')
+    if (!username.trim()) return showToast('Are you nameless? Use any name, but use one', 'warn')
     const room = crypto.randomUUID().slice(0, 8)
     const roomName = generateRoomName()
     try {
@@ -27,14 +27,14 @@ export default function Home() {
       const data = await res.json()
       if (data.error) return showToast(data.error, 'error')
     } catch (e) {
-      return showToast('Server se connect nahi ho pa raha!', 'error')
+      return showToast('Unable to connect to the server', 'error')
     }
     navigate(`/room/${room}`, { state: { roomName, username: username.trim() } })
   }
 
   async function handleJoin() {
-    if (!username.trim()) return showToast('Apna naam daalo!', 'warn')
-    if (!inputVal.trim()) return showToast('Room ID daalo!', 'warn')
+    if (!username.trim()) return showToast('Even legends have a name!', 'warn')
+    if (!inputVal.trim()) return showToast('create a room if you dont know which one to join', 'warn')
     try {
       const res = await fetch(`${BACKEND}/room-exists/${inputVal.trim()}`)
       const data = await res.json()
@@ -43,7 +43,7 @@ export default function Home() {
         state: { roomName: data.room_name, username: username.trim() }
       })
     } catch (e) {
-      showToast('Server se connect nahi ho pa raha!', 'error')
+      showToast('The server you are trying to connect is busy right now. Try again later! ', 'error')
     }
   }
 
