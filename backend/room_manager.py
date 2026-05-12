@@ -86,4 +86,3 @@ async def cleanup_empty_rooms():
         for room_id in empty:
             room_names.pop(room_id, None)
             users_in_room.pop(room_id, None)
-            print(f"[cleanup] Room removed: {room_id}")

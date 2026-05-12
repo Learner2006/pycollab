@@ -27,7 +27,6 @@ class YjsNamespace(socketio.AsyncNamespace):
         room_id = get_room_id(environ)
         sid_rooms[sid] = room_id
         await self.enter_room(sid, room_id)
-        print(f"[connect] {sid} → room {room_id}")
 
     async def on_disconnect(self, sid):
         room= sid_rooms.get(sid)
@@ -41,8 +40,6 @@ class YjsNamespace(socketio.AsyncNamespace):
             sid_rooms.pop(sid, None)
             await self.emit("update_users", get_user_list(room), room=room)  
             await self.emit("chat_message", { "username": "System", "color": "#888", "message": f"← {username} left the room", "timestamp": time.time(), "system": True }, room=room)
-
-        print(f"[disconnect] {sid}")
 
     async def on_join(self, sid, data):
         room = data.get("room_id")
@@ -100,7 +97,7 @@ class YjsNamespace(socketio.AsyncNamespace):
                 elif kind == "done":
                     if buffer:  
                         await sio.emit("execution_stdout", {"lines": buffer}, room=room)
-                    result["errorLine"] = parse_error_line(result.get("stderr", ""))
+                    result["errorLine"] = parse_error_line(result.get("stderr") or  "")
                     await sio.emit("execution_result", result, room=room)
         task = asyncio.create_task(_execute())
         running_tasks[room] = task

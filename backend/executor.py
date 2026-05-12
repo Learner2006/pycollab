@@ -1,50 +1,62 @@
-import asyncio
 import aiohttp
+import asyncio
 
-PISTON_URL = "https://emkc.org/api/v2/piston/execute"
-TIMEOUT_SECONDS = 10
+PAIZA_URL = "https://api.paiza.io/runners/create"
+DETAILS_URL = "https://api.paiza.io/runners/get_details"
 
 async def stream_python(code: str):
+    payload = {
+        "source_code": code,
+        "language": "python3",
+        "longpoll": True,
+        "api_key": "guest"
+    }
+
     try:
         async with aiohttp.ClientSession() as session:
-            payload = {
-                "language": "python",
-                "version": "*",
-                "files": [{"content": code}],
-                "run_timeout": TIMEOUT_SECONDS * 1000,  # ms
-            }
+            async with session.post(PAIZA_URL, json=payload) as resp:
+                run_data = await resp.json()
+                run_id = run_data.get("id")
 
-            async with session.post(PISTON_URL, json=payload, timeout=aiohttp.ClientTimeout(total=15)) as resp:
+            for _ in range(20):
+                await asyncio.sleep(0.5)
+                params = {"id": run_id, "api_key": "guest"}
+                async with session.get(DETAILS_URL, params=params) as resp:
+                    result = await resp.json()
+                if result.get("status") == "completed":
+                    break
+
+            params = {"id": run_id, "api_key": "guest"}
+            async with session.get(DETAILS_URL, params=params) as resp:
                 result = await resp.json()
 
-        run = result.get("run", {})
-        stdout = run.get("stdout", "")
-        stderr = run.get("stderr", "")
-        code_exit = run.get("code", 0)
-        signal = run.get("signal", None)
+        stdout = result.get("stdout", "") or ""
+        stderr = result.get("stderr", "") or ""
+        build_stderr = result.get("build_stderr", "") or ""
+        paiza_result = result.get("result", "")
 
-        # Stream stdout line by line
         if stdout:
             for line in stdout.splitlines():
                 yield ("stdout", line)
 
         # Timeout detect
-        if signal == "SIGKILL" or code_exit == 124:
-            stderr = "⏱ Time limit exceeded (possible infinite loop)"
-            code_exit = 124
+        if paiza_result == "timeout":
+            yield ("done", {
+                "stderr": "⏱ Time limit exceeded (possible infinite loop)",
+                "code": 124
+            })
+            return
+
 
         yield ("done", {
-            "stderr": stderr,
-            "code": code_exit
+            "stderr": stderr or build_stderr,
+            "code": (result.get("exit_code") or 0)
         })
 
     except asyncio.TimeoutError:
         yield ("done", {
-            "stderr": "⏱ Time limit exceeded (possible infinite loop)",
+            "stderr": "⏱ Time limit exceeded",
             "code": 124
         })
     except Exception as e:
-        yield ("done", {
-            "stderr": str(e),
-            "code": 1
-        })
+        yield ("done", {"stderr": str(e), "code": 1})
