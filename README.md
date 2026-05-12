@@ -1,198 +1,155 @@
-# 🧠 PyCollab — Real-Time Collaborative Coding Sandbox
-
-<div align="center">
-
-### ⚡ Multiplayer Python Coding — Real-time. No friction. Pure chaos.
-
-</div>
-
+# PyCollab
+ 
+> Code together. Break things together. Fix things together.
+ 
+PyCollab is a realtime collaborative Python playground where multiple users can join the same room, write code together, chat, and run Python instantly.
+ 
+The goal was simple: make coding feel less isolated and more interactive.
+ 
+Instead of sharing screenshots, copying snippets, or jumping between calls and editors — just open a room and start coding together.
+ 
+**Live Demo:** [pycollab.vercel.app](https://pycollab.vercel.app)
+ 
 ---
-
-## 🚀 What is PyCollab?
-
-PyCollab is a real-time multiplayer coding sandbox where multiple users can:
-
-- edit the same Python file together
-- see live cursors + updates instantly
-- run code in a secure Docker sandbox
-- chat while coding in real-time
-
-No login. No setup. Just pure collaborative chaos.
-
+ 
+# Screenshots
+ 
+### Login Page
+![Login Page](./screenshots/login_page.png)
+ 
+### Collaborative Editing with Live Cursors
+![Collaborative Editing](./screenshots/output.png)
+ 
+### AI Code Explanation
+![AI Explanation](./screenshots/explain_panel.png)
+ 
+### Chat Panel
+![Chat Panel](./screenshots/chat_panel.png)
+ 
 ---
-
-## ✨ Features
-
-| Feature | Description |
-|--------|-------------|
-| ⚡ Instant Rooms | Create or join with a link |
-| 🧑‍💻 Shared Editor | Monaco Editor + Yjs CRDT sync |
-| 🎯 Live Cursors | Color-coded users with labels |
-| ▶️ Code Execution | Python runs inside Docker sandbox |
-| 📡 Live Output | stdout + stderr broadcast |
-| 💬 Chat System | Real-time chat + system messages |
-| 🔗 Shareable Rooms | Copy link to invite users |
-| 🛡️ Secure Sandbox | No internet + resource limits |
-| ♻️ Auto Cleanup | Empty rooms removed automatically |
-
+ 
+# Features
+ 
+## Realtime Collaborative Editing
+Built using Yjs CRDT synchronization for smooth multiplayer editing without conflicts.
+ 
+- Multiple users can type simultaneously
+- Changes sync instantly across all clients
+- Conflict-free collaborative editing
+## Live Remote Cursors
+See exactly where everyone is working inside the editor.
+ 
+- Live cursor positions with username labels
+- User-colored cursors
+- Selection synchronization
+- Follow mode for teammates
+## Shared Python Execution
+Run Python code directly inside the room.
+ 
+- Shared execution for all users
+- Live output streaming
+- Infinite loop timeout protection
+- Error line highlighting
+## Built-in Realtime Chat
+Communicate without leaving the workspace.
+ 
+- Room-based chat
+- Message timestamps
+- Unread message indicator
+## AI Code Explanation
+Select code or explain the entire file to get beginner-friendly explanations directly inside the workspace.
+ 
+## Keyword Activity Tracking
+Tracks important Python keywords used inside the editor in realtime — useful for collaborative learning and teaching sessions.
+ 
+## Autosave
+Code is automatically saved periodically so rooms can recover previous state after refresh.
+ 
+## Shareable Rooms
+Create a room and instantly share it with others. No signup required.
+ 
 ---
-
-## 🧱 Tech Stack
-
-### Frontend
-- React 18  
-- Monaco Editor (VS Code engine)  
-- Yjs + y-monaco (CRDT sync)  
-- Socket.IO client  
-- Tailwind CSS  
-
-### Backend
-- FastAPI  
-- Socket.IO (async)  
-- Python 3.11  
-
-### Execution Layer
-- Docker (python:3.11-slim)  
-- 10s timeout kill switch  
-- 128MB RAM limit  
-- No network access  
-- Non-root execution  
-
+ 
+# Tech Stack
+ 
+**Frontend** — React, Vite, Monaco Editor, Yjs, Socket.IO
+ 
+**Backend** — FastAPI, Python Socket.IO, Redis, Paiza.io
+ 
+**AI** — Groq API, LLaMA 3.3
+ 
+**Deployment** — Vercel, Render, Upstash Redis
+ 
 ---
-
-## 📁 Project Structure
-
-
-```
-pycollab/
-│
-├── backend/
-│   ├── main.py              # FastAPI app, CORS, /create-room, /room-exists, Socket.IO mount
-│   ├── websocket.py         # Socket.IO namespace, all event handlers (join, run, chat, Yjs)
-│   ├── room_manager.py      # In-memory room state, user colors, rate limiting, cleanup
-│   └── executor.py          # Docker sandbox — runs Python code, enforces limits
-│
-├── frontend/
-│   └── src/
-│       ├── App.jsx              # React Router — / and /room/:roomId
-│       ├── main.jsx             # ReactDOM entry point
-│       ├── utils.js             # BACKEND url, showToast(), generateRoomName()
-│       ├── websocket.js         # initYjs() + initUserSocket() — Socket.IO setup
-│       ├── pages/
-│       │   ├── Home.jsx         # Create room / Join room UI
-│       │   └── Room.jsx         # Main workspace — editor, output, chat, header
-│       └── editor/
-│           ├── Editor.jsx       # Monaco + MonacoBinding + Yjs + cursor init
-│           ├── Chat.jsx         # Realtime chat sidebar with system messages
-│           ├── OutputConsole.jsx# stdout (green) / stderr (red) display panel
-│           └── cursorRenderer.js# Remote cursor decorations via Monaco + awareness
-│
-└── README.md
+ 
+# Running Locally
+ 
+**1. Clone**
+ 
+```bash
+git clone https://github.com/Learner2006/pycollab
+cd pycollab
 ```
  
-
-
+**2. Backend**
+ 
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:sio_app --host 0.0.0.0 --port 8000
+```
+ 
+**3. Frontend**
+ 
+```bash
+cd frontend
+npm install
+npm run dev
+```
+ 
 ---
-
-## ⚙️ How It Works
-
-### 1. Room System
-- create room → unique ID generated  
-- share link → others join instantly  
-- max 5 users per room  
-
+ 
+# Environment Variables
+ 
+**Frontend** `.env`
+ 
+```
+VITE_BACKEND_URL=http://localhost:8000
+VITE_GROQ_KEY=your_groq_api_key
+```
+ 
+**Backend** `.env`
+ 
+```
+REDIS_URL=redis://localhost:6379
+```
+ 
 ---
-
-### 2. Real-Time Sync
-- Yjs CRDT handles conflict-free editing  
-- every keystroke syncs instantly  
-- no locks, no merge conflicts  
-
+ 
+# Limits
+ 
+- Max 5 users per room
+- Execution timeout enabled
+- Rate limiting between runs
+- Room persistence: 24 hours
 ---
-
-### 3. Code Execution Flow
-
-
-User clicks RUN
-↓
-Backend receives code
-↓
-Docker container starts
-↓
-Code executed in isolation
-↓
-stdout / stderr captured
-↓
-Broadcast to all users
-
-
+ 
+# Known Limitations
+ 
+`os.system()` output may appear out of order due to stdout buffering in the execution sandbox. Use `print()` for expected output ordering.
+ 
 ---
-
-## 🛡️ Sandbox Security
-
-- No internet access  
-- 10s execution timeout  
-- 128MB RAM limit  
-- 50% CPU cap  
-- Temporary filesystem only  
-- Non-root container user  
-
+ 
+# Notes
+ 
+Built to learn and experiment with realtime systems, collaborative synchronization, websocket communication, and shared execution workflows.
+ 
+V2 will focus on UI polish and smoother interactions.
+ 
 ---
-
-## 🔌 Socket Events
-
-### Client → Server
-- join  
-- run_code  
-- chat_message  
-- yjs_update  
-
-### Server → Client
-- execution_result  
-- chat_message  
-- update_users  
-- room_full  
-
----
-
-## 🧠 Design Philosophy
-
-PyCollab is not an IDE.
-
-It is a shared chaos space where:
-
-- code is temporary  
-- collaboration is real-time  
-- mistakes are visible instantly  
-
----
-
-## 🗺️ Roadmap
-
-### v1 — DONE
-- real-time editor sync  
-- docker execution sandbox  
-- chat system  
-- live cursors  
-- room system  
-
-### v2 — NEXT
-- Redis persistence  
-- multi-language support  
-- session replay  
-- code history timeline  
-- scaling multi-server rooms  
-
----
-
-## 📜 License
-
-MIT © 2026
-
----
-
-<div align="center">
-
-**Built fast. Built chaotic. Built to break.**
-
-</div>
+ 
+# License
+ 
+MIT — feel free to explore, learn from it, or build on top of it.
